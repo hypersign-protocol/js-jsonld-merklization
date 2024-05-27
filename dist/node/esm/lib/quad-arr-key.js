@@ -1,0 +1,34 @@
+import { getGraphName } from './utils';
+import { NodeType } from './types/types';
+export class QuadArrKey {
+    constructor(q) {
+        this.graph = getGraphName(q);
+        const s = q.subject;
+        switch (s.termType) {
+            case NodeType.IRI:
+                this.subject = { tp: NodeType.IRI, val: s.value };
+                break;
+            case NodeType.BlankNode:
+                this.subject = { tp: NodeType.BlankNode, val: s.value };
+                break;
+            default:
+                throw new Error('invalid subject type');
+        }
+        if (q.predicate.termType !== NodeType.IRI) {
+            throw new Error('invalid predicate type');
+        }
+        this.predicate = q.predicate.value;
+    }
+    toString() {
+        return JSON.stringify(this);
+    }
+}
+QuadArrKey.countEntries = (nodes) => {
+    const res = new Map();
+    for (const q of nodes) {
+        const key = new QuadArrKey(q);
+        let c = res.get(key.toString()) ?? 0;
+        res.set(key.toString(), ++c);
+    }
+    return res;
+};
